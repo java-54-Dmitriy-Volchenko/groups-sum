@@ -1,6 +1,10 @@
 package telran.numbers.test;
+import telran.performance.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Random;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 import telran.numbers.*;
@@ -19,9 +23,12 @@ int[][] largeGroups = getLargeGroups(N_GROUPS, GROUP_LENGTH);
 		assertEquals(21, gs.getSum());
 	}
 	private int[][] getLargeGroups(int nGroups, int groupLength) {
-		// TODO creating random two dimensional array 
-		// using method generate of Stream
-		return null;
+		 Random random = new Random();
+	        return IntStream.range(0, N_GROUPS)
+	                .mapToObj(i -> IntStream.generate(() -> random.nextInt(1000))
+	                        .limit(GROUP_LENGTH) 
+	                        .toArray()) 
+	                .toArray(int[][]::new); 
 	}
 	@Test
 	void goupsSumThreadPoolTest() {
@@ -30,11 +37,25 @@ int[][] largeGroups = getLargeGroups(N_GROUPS, GROUP_LENGTH);
 	}
 	@Test
 	void groupsSumTaskThreadPerformance() {
-		new GroupsSumTaskThread(largeGroups).getSum();
+		
+		 PerformanceTest taskThreadTest = new PerformanceTest("Task Thread Performance", 10) {
+		      @Override
+		      protected void runTest() {
+		      new GroupsSumTaskThread(largeGroups).getSum();
+		            }
+		        };
+		        taskThreadTest.run();
 	}
+	
 	@Test
-	void groupsSumTaskThreadPoolsPerformance() {
-		new GroupsSumThreadPool(largeGroups).getSum();
-	}
-
+	 void groupsSumTaskThreadPoolsPerformance() {
+        PerformanceTest threadPoolTest = new PerformanceTest("Thread Pool Performance", 10) {
+            @Override
+            protected void runTest() {
+                new GroupsSumThreadPool(largeGroups).getSum();
+            }
+        };
+        threadPoolTest.run();
+    }
+	
 }
